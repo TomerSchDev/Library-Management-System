@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+    <class>FamilyViewDialog</class>
+    <widget class="QDialog" name="FamilyViewDialog">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>400</width>
+                <height>300</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>Family Details</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+                <widget class="QLabel" name="familyNameLabel">
+                    <property name="font">
+                        <font>
+                            <pointsize>16</pointsize>
+                            <weight>75</weight>
+                            <bold>true</bold>
+                        </font>
+                    </property>
+                    <property name="text">
+                        <string>Family: </string>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <widget class="QLabel" name="clientCountLabel">
+                    <property name="font">
+                        <font>
+                            <pointsize>12</pointsize>
+                        </font>
+                    </property>
+                    <property name="text">
+                        <string>Number of Clients: </string>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <widget class="QLabel" name="clientsLabel">
+                    <property name="font">
+                        <font>
+                            <pointsize>12</pointsize>
+                        </font>
+                    </property>
+                    <property name="text">
+                        <string>Clients in this Family:</string>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <widget class="QListWidget" name="clientsListWidget"/>
+            </item>
+            <item>
+                <widget class="QPushButton" name="closeButton">
+                    <property name="text">
+                        <string>Close</string>
+                    </property>
+                </widget>
+            </item>
+        </layout>
+    </widget>
+    <resources/>
+    <connections>
+        <connection>
+            <sender>closeButton</sender>
+            <signal>clicked()</signal>
+            <receiver>FamilyViewDialog</receiver>
+            <slot>accept()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                    <x>200</x>
+                    <y>274</y>
+                </hint>
+                <hint type="destinationlabel">
+                    <x>199</x>
+                    <y>149</y>
+                </hint>
+            </hints>
+        </connection>
+    </connections>
+    <slots>
+        <slot>accept()</slot>
+    </slots>
+</ui>
