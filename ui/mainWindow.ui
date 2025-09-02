@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+    <class>MainWindow</class>
+    <widget class="QMainWindow" name="MainWindow">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>800</width>
+                <height>600</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>Library Management System</string>
+        </property>
+        <widget class="QWidget" name="centralwidget">
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+                <item>
+                    <widget class="QTabWidget" name="tabWidget">
+                        <property name="currentIndex">
+                            <number>0</number>
+                        </property>
+                        <widget class="QWidget" name="booksTab">
+                            <attribute name="title">
+                                <string>Books</string>
+                            </attribute>
+                            <layout class="QVBoxLayout" name="verticalLayout">
+                                <item>
+                                    <widget class="QLabel" name="label_books">
+                                        <property name="text">
+                                            <string>Books in Library:</string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item>
+                                    <widget class="QListWidget" name="bookListWidget"/>
+                                </item>
+                                <item>
+                                    <widget class="QPushButton" name="addBookButton">
+                                        <property name="text">
+                                            <string>Add New Book</string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item>
+                                    <widget class="QPushButton" name="addCopiesButton">
+                                        <property name="text">
+                                            <string>Add Copies to Selected Book</string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item>
+                                    <widget class="QPushButton" name="removeBookButton">
+                                        <property name="text">
+                                            <string>Remove Selected Book</string>
+                                        </property>
+                                    </widget>
+                                </item>
+                            </layout>
+                        </widget>
+                        <widget class="QWidget" name="clientsTab">
+                            <attribute name="title">
+                                <string>Clients</string>
+                            </attribute>
+                            <layout class="QVBoxLayout" name="verticalLayout_3">
+                                <item>
+                                    <widget class="QLabel" name="label_clients">
+                                        <property name="text">
+                                            <string>Clients:</string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item>
+                                    <widget class="QListWidget" name="clientListWidget"/>
+                                </item>
+                                <item>
+                                    <widget class="QPushButton" name="addClientButton">
+                                        <property name="text">
+                                            <string>Add New Client</string>
+                                        </property>
+                                    </widget>
+                                </item>
+                            </layout>
+                        </widget>
+                        <widget class="QWidget" name="familiesTab">
+                            <attribute name="title">
+                                <string>Families</string>
+                            </attribute>
+                            <layout class="QVBoxLayout" name="verticalLayout_4">
+                                <item>
+                                    <widget class="QLabel" name="label_families">
+                                        <property name="text">
+                                            <string>Families:</string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item>
+                                    <widget class="QListWidget" name="familyListWidget"/>
+                                </item>
+                            </layout>
+                        </widget>
+                    </widget>
+                </item>
+            </layout>
+        </widget>
+        <widget class="QMenuBar" name="menubar"/>
+        <widget class="QStatusBar" name="statusbar"/>
+    </widget>
+    <resources/>
+    <connections/>
+</ui>
