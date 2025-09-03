@@ -1,7 +1,16 @@
 #include "book.h"
 
-Book::Book(const QString& title, const QString& author, int year, int copies)
-    : m_title(title), m_author(author), m_year(year), m_copies(copies) {}
+#include <utility>
+
+Book::Book(QString  id, const QString& title, const QString& author, int year, int copies)
+    : m_id(std::move(id)), m_title(title), m_author(author), m_year(year), m_copies(copies)
+{
+}
+
+QString Book::id() const
+{
+    return m_id;
+}
 
 QString Book::title() const {
     return m_title;
@@ -21,6 +30,11 @@ int Book::copies() const {
 
 void Book::setCopies(int copies) {
     m_copies = copies;
+}
+
+void Book::addCopies(int num_copies)
+{
+    this->m_copies += num_copies;
 }
 
 QString Book::toString() const {

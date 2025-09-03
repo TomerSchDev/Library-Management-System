@@ -1,39 +1,39 @@
-//
-// Created by Tomer on 02/09/2025.
-//
-
 #ifndef CLIENT_H
 #define CLIENT_H
 
-
-
 #include <QString>
 #include <QList>
-#include "book.h"
+#include <QUuid>
 
-class Client {
+class Book; // Forward declaration
+
+class Client
+{
 public:
-    Client(const QString& name, const QString& surname, const QString& family, const QString& id = "");
+    Client(const QString& id = QUuid::createUuid().toString(),
+           const QString& name = "",
+           const QString& surname = "",
+           const QString& family = "");
 
-    // Getters
     QString id() const;
     QString name() const;
     QString surname() const;
     QString family() const;
-    const QList<Book>& takenBooks() const;
+    QList<Book> borrowedBooks() const;
 
-    // Setters
-    void setId(const QString& id);
-    void takeBook(const Book& book);
-    void returnBook(const Book& book);
+    void setName(const QString& name);
+    void setSurname(const QString& surname);
+    void setFamily(const QString& family);
+    void setBorrowedBooks(const QList<Book>& books);
+
     QString toString() const;
 
 private:
-    QString m_id;
-    QString m_name;
-    QString m_surname;
-    QString m_family;
-    QList<Book> m_takenBooks;
+    QString _id;
+    QString _name;
+    QString _surname;
+    QString _family;
+    QList<Book> _borrowedBooks;
 };
 
-#endif //CLIENT_H
+#endif // CLIENT_H

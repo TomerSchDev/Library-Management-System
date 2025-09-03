@@ -1,19 +1,19 @@
 #include "mainwindow.h"
 #include "../ui/ui_mainwindow.h"
-#include "addbookdialog.h"
-#include "addclientdialog.h"
-#include "familyviewdialog.h"
+#include "../include/library.h"
+#include "../include/addbookdialog.h"
+#include "../include/addclientdialog.h"
+#include "../include/familyviewdialog.h"
+#include "../include/clientviewdialog.h"
+#include <QInputDialog>
 #include <QMessageBox>
+#include <QListWidgetItem>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::MainWindow), _library(Library::getInstance())
 {
     ui->setupUi(this);
-    connect(&_library, &Library::booksUpdated, this, &MainWindow::updateBookList);
-    connect(&_library, &Library::clientsUpdated, this, &MainWindow::updateClientList);
-    connect(&_library, &Library::familiesUpdated, this, &MainWindow::updateFamilyList);
-
 
     updateBookList();
     updateClientList();
@@ -25,26 +25,26 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::updateBookList() {
+void MainWindow::updateBookList()
+{
     ui->bookListWidget->clear();
-    const QList<Book>& books = _library.allBooks();
-    for (const Book& book : books) {
+    for (const auto& book : _library->allBooks()) {
         ui->bookListWidget->addItem(book.toString());
     }
 }
 
-void MainWindow::updateClientList() {
+void MainWindow::updateClientList()
+{
     ui->clientListWidget->clear();
-    const QList<Client>& clients = _library.allClients();
-    for (const Client& client : clients) {
+    for (const auto& client : _library->allClients()) {
         ui->clientListWidget->addItem(client.toString());
     }
 }
 
-void MainWindow::updateFamilyList() {
+void MainWindow::updateFamilyList()
+{
     ui->familyListWidget->clear();
-    const QList<QString>& families = _library.allFamilies();
-    for (const QString& family : families) {
+    for (const auto& family : _library->allFamilies()) {
         ui->familyListWidget->addItem(family);
     }
 }
@@ -53,46 +53,69 @@ void MainWindow::on_addBookButton_clicked()
 {
     AddBookDialog dialog(this);
     if (dialog.exec() == QDialog::Accepted) {
-        _library.addBook(dialog.getTitle(), dialog.getAuthor(), dialog.getYear(), dialog.getCopies());
+        _library->addBook(dialog.getTitle(), dialog.getAuthor(), dialog.getYear(), dialog.getCopies());
+        updateBookList();
     }
 }
 
 void MainWindow::on_removeBookButton_clicked()
 {
-    QListWidgetItem* item = ui->bookListWidget->currentItem();
-    if (item) {
-        int index = ui->bookListWidget->row(item);
-        _library.removeBook(index);
-    } else {
-        QMessageBox::warning(this, "No Selection", "Please select a book to remove.");
+    QListWidgetItem* selectedItem = ui->bookListWidget->currentItem();
+    if (selectedItem) {
+        int index = ui->bookListWidget->row(selectedItem);
+        _library->removeBook(index);
+        updateBookList();
     }
 }
 
 void MainWindow::on_addCopiesButton_clicked()
 {
-    QListWidgetItem* item = ui->bookListWidget->currentItem();
-    if (item) {
-        int index = ui->bookListWidget->row(item);
-        _library.addCopies(index, 1);
-    } else {
-        QMessageBox::warning(this, "No Selection", "Please select a book to add copies to.");
+    QListWidgetItem* selectedItem = ui->bookListWidget->currentItem();
+    if (selectedItem) {
+        bool ok;
+        int numCopies = QInputDialog::getInt(this, "Add Copies", "Number of copies to add:", 1, 1, 1000, 1, &ok);
+        if (ok) {
+            int index = ui->bookListWidget->row(selectedItem);
+            _library->addCopies(index, numCopies);
+            updateBookList();
+        }
     }
 }
 
 void MainWindow::on_addClientButton_clicked()
 {
-    AddClientDialog dialog(_library.allFamilies(), this);
+    AddClientDialog dialog(_library->allFamilies(),this);
     if (dialog.exec() == QDialog::Accepted) {
-        _library.addClient(dialog.getName(), dialog.getSurname(), dialog.getFamily());
+        _library->addClient(dialog.getName(), dialog.getSurname(), dialog.getFamily());
+        updateClientList();
+        updateFamilyList();
     }
 }
 
 void MainWindow::on_familyListWidget_doubleClicked(const QModelIndex &index)
 {
-    QString familyName = index.data().toString();
-    QList<Client> clients = _library.getClientsByFamilyName(familyName);
+    if (index.isValid()) {
+        QString familyName = index.data(Qt::DisplayRole).toString();
+        FamilyViewDialog dialog(this);
+        dialog.setFamilyInfo(familyName, _library->getClientsByFamily(familyName));
+        dialog.exec();
+    }
+}
 
-    FamilyViewDialog dialog(this);
-    dialog.setFamilyInfo(familyName, clients);
-    dialog.exec();
+void MainWindow::on_clientListWidget_doubleClicked(const QModelIndex &index)
+{
+    if (index.isValid()) {
+        QString clientName = index.data(Qt::DisplayRole).toString();
+        ClientViewDialog dialog(this);
+        // Assuming clientName is the full string representation of the client
+        // You'll need to find the actual Client object from the library
+        QList<Client> allClients = _library->allClients();
+        for (const auto& client : allClients) {
+            if (client.toString() == clientName) {
+                dialog.setClient(client);
+                dialog.exec();
+                return;
+            }
+        }
+    }
 }

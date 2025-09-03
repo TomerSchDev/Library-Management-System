@@ -11,7 +11,6 @@
 namespace Ui {
     class MainWindow;
 }
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -30,7 +29,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Library _library;
+    Library* _library;
 
     void updateBookList();
     void updateClientList();

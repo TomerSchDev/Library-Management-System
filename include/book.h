@@ -1,27 +1,31 @@
 #ifndef LIBRARY_MANAGEMENT_SYSTEM_BOOK_H
 #define LIBRARY_MANAGEMENT_SYSTEM_BOOK_H
 
+#include <qsqlquery.h>
 #include <QString>
 
 class Book {
 private:
+    QString m_id;
     QString m_title;
     QString m_author;
     int m_year;
     int m_copies;
 
+
 public:
-    Book(const QString& title, const QString& author, int year, int copies);
+    Book(QString  id, const QString& title, const QString& author, int year, int copies);
 
     // Getters
+    QString id() const;
     QString title() const;
     QString author() const;
     int year() const;
     int copies() const;
     QString toString() const;
 
-    // Setters
     void setCopies(int copies);
+    void addCopies(int num_copies);
 };
 
 #endif //LIBRARY_MANAGEMENT_SYSTEM_BOOK_H
