@@ -55,11 +55,11 @@ struct BorrowRecordSchema {
 class DbManager
 {
 public:
-    DbManager(QSqlDatabase& db);
+    explicit DbManager(QSqlDatabase& db);
     ~DbManager();
     bool createTables() const;
     static QVariantMap getSchemaForTable(DbTable table);
-    QSqlQuery executeAction(DbAction action, DbTable table, const QVariantMap& args);
+    std::pair<bool, QSqlQuery> executeAction(DbAction action, DbTable table, const QVariantMap& args) const;
 
 private:
     QSqlDatabase& m_db;

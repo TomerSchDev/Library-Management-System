@@ -10,13 +10,13 @@ class Book; // Forward declaration
 class Client
 {
 public:
-    Client(const QString& id = QUuid::createUuid().toString(),
+    Client(int id = -1,
            const QString& name = "",
            const QString& surname = "",
            const QString& family = "");
     Client(const QString& name, const QString& surname, const QString& family);
 
-    QString id() const;
+    int id() const;
     QString name() const;
     bool operator==(const Client& other) const;
     QString surname() const;
@@ -31,7 +31,7 @@ public:
     QString toString() const;
 
 private:
-    QString _id;
+    int _id;
     QString _name;
     QString _surname;
     QString _family;

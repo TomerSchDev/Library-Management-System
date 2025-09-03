@@ -1,16 +1,18 @@
 #include "../include/client.h"
 #include "../include/book.h"
 
-Client::Client(const QString& id, const QString& name, const QString& surname, const QString& family)
-    : _id(id), _name(name), _surname(surname), _family(family)
+
+
+Client::Client(int id, const QString& name, const QString& surname, const QString& family) : _id(id), _name(name), _surname(surname), _family(family)
 {
 }
+
 Client::Client(const QString& name, const QString& surname, const QString& family)
     : _name(name), _surname(surname), _family(family)
 {
-     _id = QUuid::createUuidV3(QUuid::fromString(QString("%1_%2_%3").arg(name, surname, family)),"client_uniqe_key").toString();
+     _id = -1; // Indicate that the ID is not set
 }
-QString Client::id() const
+int Client::id() const
 {
     return _id;
 }
