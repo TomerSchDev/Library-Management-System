@@ -14,6 +14,20 @@
 // Forward declaration
 struct BorrowRecord;
 
+enum class TransactionResult
+{
+    Success,
+    Failure_DBFailed,
+    Failure_ClientNotFound,
+    Failure_BookNotFound,
+    Failure_ClientAlreadyExists,
+    Failure_BookAlreadyExists,
+    Failure_NotAvailableBook,
+    Failure_NoCopies,
+    Failure_AlreadyBorrowed,
+
+};
+
 class Library final : public QObject {
     Q_OBJECT
 
@@ -42,15 +56,15 @@ public:
     [[nodiscard]] const QList<Client>& allClients() const;
     [[nodiscard]] const QList<QString>& allFamilies() const;
     [[nodiscard]] QList<Client> getClientsByFamilyName(const QString& familyName) const;
-    bool updateClient(const QString& id,const QString& name, const QString& surname, const QString& family) const;
+    bool updateClient(int id, const QString& name, const QString& surname, const QString& family) const;
     void on_familyListWidget_doubleClicked(const Client& client) const;
 
     // Borrow management
-    bool borrowBook(const QString& clientId, Book& book) const;
-    bool returnBook(int borrowRecordId);
-    bool extendBorrowTime(int borrowRecordId, int days);
-    Book* getBookById(QString id) const;
-    [[nodiscard]] QList<BorrowRecord> getBorrowRecordsByClientId(const QString& clientId) const;
+    TransactionResult borrowBook(int clientId, const BorrowRecord& record);
+    TransactionResult returnBook(const int& borrowRecordId) const;
+    bool extendBorrowTime(const int& borrowRecordId, int days) const;
+    Book* getBookById(int id) const;
+    [[nodiscard]] QList<BorrowRecord> getBorrowRecordsByClientId(int clientId) const;
     QList<Book> getBorrowedBooksByClient(const QString& clientId) const;
 
 signals:
@@ -76,8 +90,8 @@ private:
 
 struct BorrowRecord {
     int id;
-    QString bookId;
-    QString clientId;
+    int bookId;
+    int clientId;
     QDate borrowDate;
     QDate returnDate;
     bool isReturned;

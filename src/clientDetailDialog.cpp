@@ -5,6 +5,9 @@
 #include <QApplication>
 #include <QInputDialog>
 #include <QStyle>
+#include <QDebug>
+
+#include "familyviewdialog.h"
 
 ClientDetailDialog::ClientDetailDialog(const Client& client, Library* library, QWidget *parent)
     : QDialog(parent)
@@ -43,119 +46,177 @@ void ClientDetailDialog::setupUI()
     QTableWidgetItem* familyItem = new QTableWidgetItem(m_client.family());
     ui->infoTable->setItem(0, 2, familyItem);
 
-    // Make the info table not editable
-    ui->infoTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-    // Connect double-click on family cell to the slot
-
-    // Setup table headers for borrowed books
+    // Setup table headers for borrowTable
     ui->borrowTable->setColumnCount(7);
     QStringList headers;
     headers << "Book Name" << "Book Author" << "Book ID" << "Borrow Date"
-            << "Return Date" << "Extend" << "Return";
+            << "Return Date" << "Status" << "Actions";
     ui->borrowTable->setHorizontalHeaderLabels(headers);
-    ui->borrowTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->borrowTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->borrowTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->borrowTable->verticalHeader()->setVisible(false);
-}
-
-void ClientDetailDialog::on_infoTable_cellDoubleClicked(int row, int column) const
-{
-    if (column == 2) { // Family column
-        if (m_library) {
-            m_library->on_familyListWidget_doubleClicked(this->m_client); // Pass a dummy index
-        }
-    }
+    ui->borrowTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->borrowTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->borrowTable->setSelectionMode(QAbstractItemView::NoSelection);
 }
 
 void ClientDetailDialog::loadBorrowRecords()
 {
+    // PROBLEM 1 FIX: Clear the list before loading new records to prevent duplicates.
+    m_borrowRecords.clear();
     m_borrowRecords = m_library->getBorrowRecordsByClientId(m_client.id());
 }
 
 void ClientDetailDialog::updateBorrowTable()
 {
+    // PROBLEM 2 FIX: Clear the table before populating it to ensure
+    // the UI is a true reflection of the current data.
+    ui->borrowTable->setRowCount(0);
     ui->borrowTable->setRowCount(m_borrowRecords.size());
+    
+    for (int row = 0; row < m_borrowRecords.size(); ++row) {
+        const BorrowRecord& record = m_borrowRecords.at(row);
+        Book* book = m_library->getBookById(record.bookId);
+        if (!book)
+        {
+            qDebug() << "Could not find book with ID:" << record.bookId;
+            continue; // Skip this record if the book is not found
+        }
+        QString bookTitle = book->title();
+        QString bookAuthor = book->author();
+        // Populate the book information
+        ui->borrowTable->setItem(row, 0, new QTableWidgetItem(bookTitle));
+        ui->borrowTable->setItem(row, 1, new QTableWidgetItem(bookAuthor));
+        ui->borrowTable->setItem(row, 2, new QTableWidgetItem(record.bookId));
+        ui->borrowTable->setItem(row, 3, new QTableWidgetItem(record.borrowDate.toString("dd/MM/yyyy")));
+        ui->borrowTable->setItem(row, 4, new QTableWidgetItem(record.returnDate.toString("dd/MM/yyyy")));
+        
+        // Add status and actions
+        QTableWidgetItem* statusItem = new QTableWidgetItem(record.isReturned ? "Returned" : "Borrowed");
+        ui->borrowTable->setItem(row, 5, statusItem);
 
-    for (int i = 0; i < m_borrowRecords.size(); ++i) {
-        const auto& record = m_borrowRecords.at(i);
-        const Book* book = m_library->getBookById(record.bookId);
-        if (!book) continue; // Skip if book not found
-        // Populate table items
-        ui->borrowTable->setItem(i, 0, new QTableWidgetItem(book->title()));
-        ui->borrowTable->setItem(i, 1, new QTableWidgetItem(book->author()));
-        ui->borrowTable->setItem(i, 2, new QTableWidgetItem(record.bookId));
-        ui->borrowTable->setItem(i, 3, new QTableWidgetItem(record.borrowDate.toString("dd/MM/yyyy")));
-        ui->borrowTable->setItem(i, 4, new QTableWidgetItem(record.returnDate.toString("dd/MM/yyyy")));
+        QWidget* actionWidget = new QWidget(this);
+        QHBoxLayout* layout = new QHBoxLayout(actionWidget);
+        layout->setContentsMargins(0, 0, 0, 0);
+        layout->setSpacing(5);
 
-        if (record.isReturned) {
-            ui->borrowTable->setItem(i, 5, new QTableWidgetItem("Returned"));
-            ui->borrowTable->setItem(i, 6, new QTableWidgetItem("Returned"));
-        } else {
-            // Add extend button
-            QPushButton* extendButton = new QPushButton(QApplication::style()->standardIcon(QStyle::SP_ArrowRight), "");
-            extendButton->setToolTip("Extend borrow time");
-            extendButton->setProperty("recordId", record.id);
-            connect(extendButton, &QPushButton::clicked, this, &ClientDetailDialog::handleExtendBorrowClicked);
-            ui->borrowTable->setCellWidget(i, 5, extendButton);
-
-            // Add return button
-            QPushButton* returnButton = new QPushButton(QApplication::style()->standardIcon(QStyle::SP_DialogOkButton), "");
+        if (!record.isReturned) {
+            QPushButton* returnButton = new QPushButton(QApplication::style()->standardIcon(QStyle::SP_DialogYesButton), "Return");
             returnButton->setToolTip("Return this book");
             returnButton->setProperty("recordId", record.id);
-            connect(returnButton, &QPushButton::clicked, this, &ClientDetailDialog::handleReturnBookClicked);
-            ui->borrowTable->setCellWidget(i, 6, returnButton);
+            connect(returnButton, &QPushButton::clicked, this, &ClientDetailDialog::on_returnBookButton_clicked);
+            layout->addWidget(returnButton);
+
+            QPushButton* extendButton = new QPushButton(QApplication::style()->standardIcon(QStyle::SP_ArrowRight), "Extend");
+            extendButton->setToolTip("Extend the borrow time");
+            extendButton->setProperty("recordId", record.id);
+            connect(extendButton, &QPushButton::clicked, this, &ClientDetailDialog::on_extendBorrowButton_clicked);
+            layout->addWidget(extendButton);
         }
+
+        actionWidget->setLayout(layout);
+        ui->borrowTable->setCellWidget(row, 6, actionWidget);
     }
 }
 
 void ClientDetailDialog::on_newBorrowButton_clicked()
 {
-    NewBorrowDialog dialog(m_library->allBooks(), this);
-    if (dialog.exec() == Accepted)
-    {
-        loadBorrowRecords();
-        updateBorrowTable();
+    NewBorrowDialog newBorrowDialog(m_library->getAvailableBooks(), this);
+    if (newBorrowDialog.exec() == QDialog::Accepted) {
+        Book selectedBook = newBorrowDialog.getSelectedBook();
+        BorrowRecord newRecord;
+        newRecord.bookId = selectedBook.id();
+        newRecord.clientId = m_client.id();
+        newRecord.borrowDate = QDate::currentDate();
+        newRecord.returnDate = newBorrowDialog.getReturnDate(); // Default 2
+        newRecord.isReturned = false;
+        TransactionResult result=m_library->borrowBook(m_client.id(), newRecord);
+        if  (result == TransactionResult::Success) {
+            QMessageBox::information(this, "Success", "Book borrowed successfully!");
+            // Reload and update the table after a successful borrow
+            loadBorrowRecords();
+            updateBorrowTable();
+        } else {
+            QString errorMsg;
+            QString level = "Error";
+            switch (result)
+            {
+            case  TransactionResult::Failure_NotAvailableBook:
+                errorMsg = "The selected book is not available.";
+                level = "Warning";
+                break;
+            case  TransactionResult::Failure_NoCopies:
+                errorMsg = "No copies of the selected book are available.";
+                level="Error";
+                break;
+            case TransactionResult::Failure_AlreadyBorrowed:
+                errorMsg = "You have already borrowed this book and not returned it yet.";
+                level="Warning";
+                break;
+            case TransactionResult::Failure_BookNotFound:
+                errorMsg = "The selected book was not found.";
+                break;
+            case TransactionResult::Failure_ClientNotFound:
+                errorMsg = "Client not found.";
+                break;
+            case TransactionResult::Failure_DBFailed:
+                errorMsg = "A database error occurred while processing the request.";
+                break;
+            default:
+                errorMsg=" An unknown error occurred.";
+                break;
+            }
+            QMessageBox::warning(this, level, errorMsg);
+        }
     }
-
 }
 
 void ClientDetailDialog::on_editInfoButton_clicked()
 {
-    EditClientDialog dialog(m_client.id(), m_library->allFamilies(), this);
-    if (dialog.exec() == Accepted) {
-        m_client = m_library->getClientById(m_client.id());
-        setupUI(); // Re-populate the info table with updated data
+    if (EditClientDialog editClientDialog(m_client, this->m_library->allFamilies(),this); editClientDialog.exec() == Accepted) {
+        Client updatedClient = this->m_client;
+        if (m_library->updateClient(m_client.id(), updatedClient.name(), updatedClient.surname(), updatedClient.family())) {
+            m_client = updatedClient;
+            setupUI();
+            QMessageBox::information(this, "Success", "Client information updated successfully.");
+        } else {
+            QMessageBox::critical(this, "Error", "Failed to update client information.");
+        }
     }
 }
 
 void ClientDetailDialog::on_saveCloseButton_clicked()
 {
-    accept();
+    this->accept();
 }
 
-void ClientDetailDialog::handleReturnBookClicked()
-{
-    const auto* button = qobject_cast<QPushButton*>(sender());
-    if (!button) return;
-    if (const int recordId = button->property("recordId").toInt(); m_library->returnBook(recordId)) {
-        loadBorrowRecords();
-        updateBorrowTable();
-        QMessageBox::information(this, "Success", "Book returned successfully!");
-    } else {
-        QMessageBox::warning(this, "Error", "Could not return book.");
-    }
-}
-
-void ClientDetailDialog::handleExtendBorrowClicked()
+void ClientDetailDialog::on_returnBookButton_clicked()
 {
     QPushButton* button = qobject_cast<QPushButton*>(sender());
     if (!button) return;
 
     int recordId = button->property("recordId").toInt();
 
+    if (m_library->returnBook(recordId) == TransactionResult::Success) {
+        QMessageBox::information(this, "Success", "Book returned successfully!");
+        // Reload and update the table after a successful return
+        loadBorrowRecords();
+        updateBorrowTable();
+    } else {
+        QMessageBox::warning(this, "Error", "Failed to return book. It may have already been returned.");
+    }
+}
+
+void ClientDetailDialog::on_extendBorrowButton_clicked()
+{
+    const QPushButton* button = qobject_cast<QPushButton*>(sender());
+    if (!button) return;
+
+    int recordId = button->property("recordId").toInt();
+
     // Find the book record for context
-    BorrowRecord* record = nullptr;
-    for (BorrowRecord& r : m_borrowRecords) {
+    const BorrowRecord* record = nullptr;
+    for (const BorrowRecord r : m_borrowRecords) {
         if (r.id == recordId) {
             record = &r;
             break;
@@ -194,7 +255,15 @@ void ClientDetailDialog::handleExtendBorrowClicked()
                 }
             }
         } else {
-            QMessageBox::warning(this, "Error", "Could not extend borrow time.");
+            QMessageBox::warning(this, "Error", "Failed to extend borrow time.");
         }
     }
+}
+
+void ClientDetailDialog::on_infoTable_cellDoubleClicked(int row, int column)
+{
+    if (row != 0 || column != 2) return; // Only respond to family name cell
+    FamilyViewDialog family(this);
+    family.setFamilyInfo(m_client.family(), m_library->getClientsByFamilyName(m_client.family()));
+    family.exec();
 }

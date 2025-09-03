@@ -6,7 +6,7 @@
 
 class Book {
 private:
-    QString m_id;
+    int m_id;
     QString m_title;
     QString m_author;
     int m_year;
@@ -14,10 +14,10 @@ private:
     int m_borrowed_count;
 
 public:
-    Book(QString  id, const QString& title, const QString& author, int year, int copies);
+    Book(int  id, const QString& title, const QString& author, int year, int copies);
 
     // Getters
-    [[nodiscard]] QString id() const;
+    [[nodiscard]] int id() const;
     QString title() const;
     QString author() const;
     int year() const;

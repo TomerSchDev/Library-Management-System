@@ -19,8 +19,7 @@ namespace Ui {
 }
 
 
-
-class ClientDetailDialog final : public QDialog
+class ClientDetailDialog : public QDialog
 {
     Q_OBJECT
 
@@ -32,9 +31,9 @@ private slots:
     void on_newBorrowButton_clicked();
     void on_editInfoButton_clicked();
     void on_saveCloseButton_clicked();
-    void handleReturnBookClicked();
-    void handleExtendBorrowClicked();
-    void on_infoTable_cellDoubleClicked(int row, int column) const;
+    void on_returnBookButton_clicked();
+    void on_extendBorrowButton_clicked();
+    void on_infoTable_cellDoubleClicked(int row, int column);
 
 private:
     Ui::ClientDetailDialog *ui;

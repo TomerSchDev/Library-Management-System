@@ -2,12 +2,12 @@
 
 #include <utility>
 
-Book::Book(QString  id, const QString& title, const QString& author, int year, int copies)
-    : m_id(std::move(id)), m_title(title), m_author(author), m_year(year), m_copies(copies)
+Book::Book(int  id, const QString& title, const QString& author, int year, int copies)
+    : m_id(id), m_title(title), m_author(author), m_year(year), m_copies(copies)
 {
 }
 
-QString Book::id() const
+int Book::id() const
 {
     return m_id;
 }

@@ -48,14 +48,23 @@ bool DbManager::createTables() const
     return true;
 }
 
-
+QString DbActionToString(const DbAction action)
+{
+    switch (action) {
+    case DbAction::Insert: return "INSERT";
+    case DbAction::Select: return "SELECT";
+    case DbAction::Update: return "UPDATE";
+    case DbAction::Delete: return "DELETE";
+    default: return "";
+    }
+}
 
 auto DbManager::getSchemaForTable(const DbTable table) -> QVariantMap
 {
     QVariantMap schema;
     switch (table) {
     case DbTable::Books:
-        schema["id"] = "TEXT PRIMARY KEY";//
+        schema["id"] = "INTEGER PRIMARY KEY AUTOINCREMENT";//
         schema["title"] = "TEXT NOT NULL";
         schema["author"] = "TEXT NOT NULL";
         schema["year"] = "INTEGER NOT NULL";
@@ -63,7 +72,7 @@ auto DbManager::getSchemaForTable(const DbTable table) -> QVariantMap
         schema["borrowed_count"] = "INTEGER DEFAULT 0";
         break;
     case DbTable::Clients:
-        schema["id"] = "TEXT PRIMARY KEY";
+        schema["id"] = "INTEGER PRIMARY KEY AUTOINCREMENT";
         schema["name"] = "TEXT NOT NULL";
         schema["surname"] = "TEXT NOT NULL";
         schema["family"] = "TEXT NOT NULL";
@@ -73,8 +82,8 @@ auto DbManager::getSchemaForTable(const DbTable table) -> QVariantMap
         break;
     case DbTable::BorrowRecords:
         schema["id"] = "INTEGER PRIMARY KEY AUTOINCREMENT";
-        schema["client_id"] = "TEXT NOT NULL";
-        schema["book_id"] = "TEXT NOT NULL";
+        schema["client_id"] = "INTEGER NOT NULL";
+        schema["book_id"] = "INTEGER NOT NULL";
         schema["borrow_date"] = "TEXT NOT NULL";
         schema["return_date"] = "TEXT NOT NULL";
         schema["is_returned"] = "INTEGER DEFAULT 0";
@@ -132,7 +141,7 @@ QString DbManager::getTableName(DbTable table)
     }
     return "";
 }
-QSqlQuery DbManager::executeAction(DbAction action, DbTable table, const QVariantMap& args)
+std::pair<bool, QSqlQuery> DbManager::executeAction(DbAction action, DbTable table, const QVariantMap& args) const
 {
     QSqlQuery query(m_db);
     QString tableName = getTableName(table);
@@ -149,22 +158,25 @@ QSqlQuery DbManager::executeAction(DbAction action, DbTable table, const QVarian
 
         // Iterate through the schema to build the SQL query
         for (auto it = schema.begin(); it != schema.end(); ++it) {
-            QString fieldName = it.key();
             // Handle ID generation if it's not provided in the arguments
-            if (fieldName == "id" &&  (!args.contains("id") || args["id"].toString().isEmpty())) {
-                argsMap[fieldName] = generateUUID(table,args);
+            if (args.contains(it.key())) {
+                argsMap[it.key()] = args[it.key()];
             }
-
-            // Populate the lists for the SQL query
-            fields << fieldName;
-            values << ":" + fieldName;
+            else
+            {
+                qDebug()<<"Try to insert without required field "<<it.key();
+            }
+        }
+        for (auto it = argsMap.begin(); it != argsMap.end(); ++it) {
+            fields << it.key();
+            values << ":" + it.key();
         }
 
         sql = QString("INSERT INTO %1 (%2) VALUES (%3)").arg(tableName).arg(fields.join(", ")).arg(values.join(", "));
         query.prepare(sql);
 
         // Bind values from the args map
-        for (auto it = args.begin(); it != args.end(); ++it) {
+        for (auto it = argsMap.begin(); it != argsMap.end(); ++it) {
             query.bindValue(":" + it.key(), it.value());
         }
         break;
@@ -211,11 +223,12 @@ QSqlQuery DbManager::executeAction(DbAction action, DbTable table, const QVarian
         break;
     }
     }
-
-    if (!query.exec()) {
-        qDebug() << "Error executing action" << (int)action << "on table" << (int)table << ":" << query.lastError().text();
+    bool retVal = query.exec();
+    if (!retVal) {
+        qDebug() << "Error executing action" << DbActionToString(action) << "on table" << tableName << ":" << query.lastError().text();
     }
-    return query;
+
+    return {retVal, query} ;
 }
 
 

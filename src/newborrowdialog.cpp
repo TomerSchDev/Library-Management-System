@@ -39,7 +39,7 @@ Book NewBorrowDialog::getSelectedBook() const
     if (selectedRow >= 0 && selectedRow < m_availableBooks.size()) {
         return m_availableBooks[selectedRow];
     }
-    return Book("", "", "",0, 0); // Invalid book
+    return Book(-1, "", "",0, 0); // Invalid book
 }
 
 QDate NewBorrowDialog::getReturnDate() const
