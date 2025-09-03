@@ -14,9 +14,11 @@ public:
            const QString& name = "",
            const QString& surname = "",
            const QString& family = "");
+    Client(const QString& name, const QString& surname, const QString& family);
 
     QString id() const;
     QString name() const;
+    bool operator==(const Client& other) const;
     QString surname() const;
     QString family() const;
     QList<Book> borrowedBooks() const;

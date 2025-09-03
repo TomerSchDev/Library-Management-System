@@ -28,13 +28,18 @@ int Book::copies() const {
     return m_copies;
 }
 
-void Book::setCopies(int copies) {
+void Book::setCopies(const int copies) {
     m_copies = copies;
 }
 
-void Book::addCopies(int num_copies)
+void Book::addCopies(const int num_copies)
 {
     this->m_copies += num_copies;
+}
+
+void Book::reduceCopies(const int i)
+{
+    this->m_copies -= i;
 }
 
 QString Book::toString() const {

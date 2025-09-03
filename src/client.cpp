@@ -5,7 +5,11 @@ Client::Client(const QString& id, const QString& name, const QString& surname, c
     : _id(id), _name(name), _surname(surname), _family(family)
 {
 }
-
+Client::Client(const QString& name, const QString& surname, const QString& family)
+    : _name(name), _surname(surname), _family(family)
+{
+     _id = QUuid::createUuidV3(QUuid::fromString(QString("%1_%2_%3").arg(name, surname, family)),"client_uniqe_key").toString();
+}
 QString Client::id() const
 {
     return _id;
@@ -15,7 +19,10 @@ QString Client::name() const
 {
     return _name;
 }
-
+bool Client::operator ==(const Client& other) const
+{
+    return _id == other._id;
+}
 QString Client::surname() const
 {
     return _surname;

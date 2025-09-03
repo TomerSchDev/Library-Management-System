@@ -28,8 +28,8 @@ private slots:
     void on_clientListWidget_doubleClicked(const QModelIndex &index);
 
 private:
-    Ui::MainWindow *ui;
-    Library* _library;
+    Ui::MainWindow *ui{};
+    Library* _library{};
 
     void updateBookList();
     void updateClientList();

@@ -23,7 +23,7 @@ private slots:
     void on_clientsListWidget_doubleClicked(const QModelIndex& index);
 
 private:
-    Ui::FamilyViewDialog *ui;
+    Ui::FamilyViewDialog *ui{};
     QList<Client> m_clients;
 };
 
