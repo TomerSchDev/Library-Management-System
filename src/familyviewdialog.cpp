@@ -1,4 +1,8 @@
 #include "familyviewdialog.h"
+
+#include <qabstractitemmodel.h>
+
+#include "clientDetailDialog.h"
 #include "../ui/ui_familyviewdialog.h"
 
 FamilyViewDialog::FamilyViewDialog(QWidget *parent) :
@@ -20,5 +24,22 @@ void FamilyViewDialog::setFamilyInfo(const QString &familyName, const QList<Clie
     ui->clientsListWidget->clear();
     for (const Client& client : clients) {
         ui->clientsListWidget->addItem(client.toString());
+        m_clients.append(client);
+    }
+}
+void FamilyViewDialog::on_clientsListWidget_doubleClicked(const QModelIndex &index)
+{
+    if (index.isValid()) {
+        QString clientName = index.data(Qt::DisplayRole).toString();
+
+        // Assuming clientName is the full string representation of the client
+        // You'll need to find the actual Client object from the library
+        for (const auto& client : m_clients) {
+            if (client.toString() == clientName) {
+                ClientDetailDialog dialog(client,Library::instance(),this);
+                dialog.exec();
+                return;
+            }
+        }
     }
 }

@@ -1,54 +1,64 @@
-#include "client.h"
-#include <QUuid>
+#include "../include/client.h"
+#include "../include/book.h"
 
-Client::Client(const QString& name, const QString& surname, const QString& family, const QString& id)
-    : m_name(name), m_surname(surname), m_family(family)
+Client::Client(const QString& id, const QString& name, const QString& surname, const QString& family)
+    : _id(id), _name(name), _surname(surname), _family(family)
 {
-    if (id.isEmpty()) {
-        m_id = QUuid::createUuid().toString(QUuid::WithoutBraces);
-    } else {
-        m_id = id;
-    }
+}
+Client::Client(const QString& name, const QString& surname, const QString& family)
+    : _name(name), _surname(surname), _family(family)
+{
+     _id = QUuid::createUuidV3(QUuid::fromString(QString("%1_%2_%3").arg(name, surname, family)),"client_uniqe_key").toString();
+}
+QString Client::id() const
+{
+    return _id;
 }
 
-QString Client::id() const {
-    return m_id;
+QString Client::name() const
+{
+    return _name;
+}
+bool Client::operator ==(const Client& other) const
+{
+    return _id == other._id;
+}
+QString Client::surname() const
+{
+    return _surname;
 }
 
-QString Client::name() const {
-    return m_name;
+QString Client::family() const
+{
+    return _family;
 }
 
-QString Client::surname() const {
-    return m_surname;
+QList<Book> Client::borrowedBooks() const
+{
+    return _borrowedBooks;
 }
 
-QString Client::family() const {
-    return m_family;
+void Client::setName(const QString& name)
+{
+    _name = name;
 }
 
-const QList<Book>& Client::takenBooks() const {
-    return m_takenBooks;
+void Client::setSurname(const QString& surname)
+{
+    _surname = surname;
 }
 
-void Client::setId(const QString& id) {
-    m_id = id;
+void Client::setFamily(const QString& family)
+{
+    _family = family;
 }
 
-void Client::takeBook(const Book& book) {
-    m_takenBooks.append(book);
+void Client::setBorrowedBooks(const QList<Book>& books)
+{
+    _borrowedBooks = books;
 }
 
-void Client::returnBook(const Book& book) {
-    // This is a simple implementation. In a real-world app, you might match by ID.
-    for (int i = 0; i < m_takenBooks.size(); ++i) {
-        if (m_takenBooks.at(i).title() == book.title()) {
-            m_takenBooks.removeAt(i);
-            break;
-        }
-    }
-}
-
-QString Client::toString() const {
-    return QString("%1 %2 (Family: %3, ID: %4)").arg(m_name, m_surname, m_family, m_id);
+QString Client::toString() const
+{
+    return QString("%1 %2").arg(_name, _surname);
 }

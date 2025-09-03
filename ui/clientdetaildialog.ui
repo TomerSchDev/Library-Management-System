@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+    <class>ClientDetailDialog</class>
+    <widget class="QDialog" name="ClientDetailDialog">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>800</width>
+                <height>600</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>Client Details</string>
+        </property>
+        <property name="styleSheet">
+            <string>QDialog {
+                background-color: #2b2b2b;
+                color: #f0f0f0;
+                }
+
+                QLabel {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                color: #f0f0f0;
+                }
+
+                QTableWidget {
+                background-color: #3c3c3c;
+                border: 1px solid #4f4f4f;
+                border-radius: 5px;
+                gridline-color: #555555;
+                alternate-background-color: #333333;
+                color: #f0f0f0;
+                }
+
+                QTableWidget::item {
+                padding: 8px;
+                border-bottom: 1px solid #4f4f4f;
+                }
+
+                QTableWidget::item:selected {
+                background-color: #5d5d5d;
+                }
+
+                QHeaderView::section {
+                background-color: #444444;
+                padding: 8px;
+                border: none;
+                border-bottom: 2px solid #5d5d5d;
+                font-weight: bold;
+                color: #f0f0f0;
+                }
+
+                QPushButton {
+                background-color: #5d5d5d;
+                color: #f0f0f0;
+                border: 1px solid #4f4f4f;
+                padding: 10px 20px;
+                border-radius: 5px;
+                font-weight: bold;
+                }
+
+                QPushButton:hover {
+                background-color: #4f4f4f;
+                }
+
+                QPushButton:pressed {
+                background-color: #444444;
+                border-color: #f0f0f0;
+                }
+            </string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+            <property name="spacing">
+                <number>20</number>
+            </property>
+            <property name="leftMargin">
+                <number>20</number>
+            </property>
+            <property name="topMargin">
+                <number>20</number>
+            </property>
+            <property name="rightMargin">
+                <number>20</number>
+            </property>
+            <property name="bottomMargin">
+                <number>20</number>
+            </property>
+            <item>
+                <widget class="QTableWidget" name="infoTable">
+                    <property name="alternatingRowColors">
+                        <bool>true</bool>
+                    </property>
+                    <property name="selectionBehavior">
+                        <enum>QAbstractItemView::SelectRows</enum>
+                    </property>
+                    <property name="sortingEnabled">
+                        <bool>false</bool>
+                    </property>
+                    <property name="showGrid">
+                        <bool>true</bool>
+                    </property>
+                    <property name="gridStyle">
+                        <enum>Qt::SolidLine</enum>
+                    </property>
+                    <property name="cornerButtonEnabled">
+                        <bool>false</bool>
+                    </property>
+                    <column>
+                        <property name="text">
+                            <string>Name</string>
+                        </property>
+                    </column>
+                    <column>
+                        <property name="text">
+                            <string>Surname</string>
+                        </property>
+                    </column>
+                    <column>
+                        <property name="text">
+                            <string>Family</string>
+                        </property>
+                    </column>
+                </widget>
+            </item>
+            <item>
+                <widget class="QLabel" name="borrowedBooksLabel">
+                    <property name="text">
+                        <string>Borrowed Books History:</string>
+                    </property>
+                    <property name="font">
+                        <font>
+                            <pointsize>14</pointsize>
+                            <weight>75</weight>
+                            <bold>true</bold>
+                        </font>
+                    </property>
+                    <property name="styleSheet">
+                        <string>QLabel {
+                            color: #f0f0f0;
+                            margin-bottom: 5px;
+                            }</string>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <widget class="QTableWidget" name="borrowTable">
+                    <property name="alternatingRowColors">
+                        <bool>true</bool>
+                    </property>
+                    <property name="selectionBehavior">
+                        <enum>QAbstractItemView::SelectRows</enum>
+                    </property>
+                    <property name="sortingEnabled">
+                        <bool>false</bool>
+                    </property>
+                    <property name="showGrid">
+                        <bool>true</bool>
+                    </property>
+                    <property name="gridStyle">
+                        <enum>Qt::SolidLine</enum>
+                    </property>
+                    <property name="cornerButtonEnabled">
+                        <bool>false</bool>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <spacer name="verticalSpacer">
+                    <property name="orientation">
+                        <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>QSizePolicy::Fixed</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                        <size>
+                            <width>20</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+            </item>
+            <item>
+                <layout class="QHBoxLayout" name="buttonLayout">
+                    <property name="spacing">
+                        <number>15</number>
+                    </property>
+                    <item>
+                        <widget class="QPushButton" name="newBorrowButton">
+                            <property name="text">
+                                <string>New Borrow</string>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>120</width>
+                                    <height>35</height>
+                                </size>
+                            </property>
+                            <property name="font">
+                                <font>
+                                    <pointsize>11</pointsize>
+                                    <weight>75</weight>
+                                    <bold>true</bold>
+                                </font>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="QPushButton" name="editInfoButton">
+                            <property name="text">
+                                <string>Edit Info</string>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>120</width>
+                                    <height>35</height>
+                                </size>
+                            </property>
+                            <property name="font">
+                                <font>
+                                    <pointsize>11</pointsize>
+                                    <weight>75</weight>
+                                    <bold>true</bold>
+                                </font>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="QPushButton" name="saveCloseButton">
+                            <property name="text">
+                                <string>Save &amp;&amp; Close</string>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>120</width>
+                                    <height>35</height>
+                                </size>
+                            </property>
+                            <property name="font">
+                                <font>
+                                    <pointsize>11</pointsize>
+                                    <weight>75</weight>
+                                    <bold>true</bold>
+                                </font>
+                            </property>
+                        </widget>
+                    </item>
+                </layout>
+            </item>
+        </layout>
+    </widget>
+    <resources/>
+    <connections/>
+</ui>
