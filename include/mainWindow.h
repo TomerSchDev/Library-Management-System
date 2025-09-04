@@ -21,11 +21,15 @@ public:
 
 private slots:
     void on_addBookButton_clicked();
+    void on_bookListWidget_itemDoubleClicked(QListWidgetItem* item);
     void on_removeBookButton_clicked();
     void on_addCopiesButton_clicked();
     void on_addClientButton_clicked();
     void on_familyListWidget_doubleClicked(const QModelIndex &index);
     void on_clientListWidget_doubleClicked(const QModelIndex &index);
+    void onBooksUpdated();
+    void onloadBorrowRecords();
+
 
 private:
     Ui::MainWindow *ui{};

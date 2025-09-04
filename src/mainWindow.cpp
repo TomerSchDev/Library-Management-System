@@ -3,6 +3,7 @@
 #include "addbookdialog.h"
 #include "addclientdialog.h"
 #include "familyviewdialog.h"
+#include "bookdetaildialog.h"
 #include "clientDetailDialog.h"
 #include <QMessageBox>
 #include <QInputDialog>
@@ -58,7 +59,17 @@ void MainWindow::on_addBookButton_clicked()
         _library->addBook(dialog.getTitle(), dialog.getAuthor(), dialog.getYear(), dialog.getCopies());
     }
 }
+void MainWindow::on_bookListWidget_itemDoubleClicked(QListWidgetItem *item)
+{
+    int bookId = item->data(Qt::UserRole).toInt()+1;
+    Library* m_library = Library::instance();
+    Book* book =m_library->getBookById(bookId);
+    if (book) {
+        BookDetailDialog dialog(*book, m_library, this);
+        dialog.exec();
+    }
 
+}
 void MainWindow::on_removeBookButton_clicked()
 {
     QListWidgetItem* item = ui->bookListWidget->currentItem();
@@ -110,4 +121,14 @@ void MainWindow::on_clientListWidget_doubleClicked(const QModelIndex &index)
         ClientDetailDialog dialog(client, _library, this);
         dialog.exec();
     }
+}
+
+void MainWindow::onBooksUpdated()
+{
+    updateBookList();
+}
+
+void MainWindow::onloadBorrowRecords()
+{
+    this->updateBookList();
 }

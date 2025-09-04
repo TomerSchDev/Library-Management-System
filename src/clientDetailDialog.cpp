@@ -122,7 +122,7 @@ void ClientDetailDialog::updateBorrowTable()
 void ClientDetailDialog::on_newBorrowButton_clicked()
 {
     NewBorrowDialog newBorrowDialog(m_library->getAvailableBooks(), this);
-    if (newBorrowDialog.exec() == QDialog::Accepted) {
+    if (newBorrowDialog.exec() == Accepted) {
         Book selectedBook = newBorrowDialog.getSelectedBook();
         BorrowRecord newRecord;
         newRecord.bookId = selectedBook.id();
@@ -130,12 +130,11 @@ void ClientDetailDialog::on_newBorrowButton_clicked()
         newRecord.borrowDate = QDate::currentDate();
         newRecord.returnDate = newBorrowDialog.getReturnDate(); // Default 2
         newRecord.isReturned = false;
-        TransactionResult result=m_library->borrowBook(m_client.id(), newRecord);
-        if  (result == TransactionResult::Success) {
+        if  (const TransactionResult result=m_library->borrowBook(m_client.id(), newRecord); result == TransactionResult::Success) {
             QMessageBox::information(this, "Success", "Book borrowed successfully!");
             // Reload and update the table after a successful borrow
             loadBorrowRecords();
-            updateBorrowTable();
+            emit updateBorrowTable();
         } else {
             QString errorMsg;
             QString level = "Error";
@@ -266,4 +265,9 @@ void ClientDetailDialog::on_infoTable_cellDoubleClicked(int row, int column)
     FamilyViewDialog family(this);
     family.setFamilyInfo(m_client.family(), m_library->getClientsByFamilyName(m_client.family()));
     family.exec();
+}
+
+void ClientDetailDialog::onBooksUpdated()
+{
+    loadBorrowRecords();
 }

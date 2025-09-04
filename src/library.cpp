@@ -227,7 +227,7 @@ void Library::removeClient(const Client& client)
     loadClients();
 }
 
-Client Library::getClientById(const QString& id) const
+Client Library::getClientById(const int id) const
 {
     QVariantMap args;
     args["id"] = id;
@@ -302,9 +302,9 @@ void Library::saveFamily(const QString& family) const
 
 
 
-void Library::on_familyListWidget_doubleClicked(const Client& client) const
+void Library::on_familyListWidget_doubleClicked(QWidget* p,const Client& client)
 {
-    FamilyViewDialog dialog;
+    FamilyViewDialog dialog(p);
     dialog.setFamilyInfo(client.family(), getClientsByFamilyName(client.family()));
     dialog.exec();
 }
@@ -354,7 +354,7 @@ TransactionResult Library::borrowBook(const int clientId, const BorrowRecord& re
     // Decrease the number of available copies
     QVariantMap updateArgs;
     updateArgs["id"] = book->id();
-    updateArgs["copies"] = book->copies() - 1;
+    updateArgs["borrowed_count"] = book->copies() - 1;
     if (auto [success,queryR] = _dbManager->executeAction(DbAction::Update, DbTable::Books, updateArgs); !success)
     {
         qDebug()<< "Error updating book copies in database after borrowing, removing borrow:" << queryR.lastError().text();
@@ -415,7 +415,9 @@ bool Library::extendBorrowTime(const int& borrowRecordId, const int days) const
 
 Book* Library::getBookById(int id) const
 {
-    auto [success,query] = _dbManager->executeAction(DbAction::Select, DbTable::Books, {{"id", id}});
+    QVariantMap args;
+    args["id"] = id;
+    auto [success,query] = _dbManager->executeAction(DbAction::Select, DbTable::Books, args);
     if (!success)
     {
         qDebug() << "Error retrieving book from database:" << query.lastError().text();
@@ -429,6 +431,14 @@ Book* Library::getBookById(int id) const
                         query.value("year").toInt(),
                         query.value("copies").toInt());
     }
+
+    for (auto& book : _books)
+    {
+        if (book.id() == id) {
+            return new Book(book.id(), book.title(), book.author(), book.year(), book.copies());
+        }
+    }
+
     return nullptr;
 }
 
@@ -478,6 +488,30 @@ QList<Book> Library::getBorrowedBooksByClient(const QString& clientId) const
         }
     }
     return books;
+}
+
+QList<BorrowRecord> Library::getBorrowRecordsByBookId(int bookId) const
+{
+    QList<BorrowRecord> records;
+    QVariantMap args;
+    args["book_id"] = bookId;
+    auto [success,query] = _dbManager->executeAction(DbAction::Select, DbTable::BorrowRecords, args);
+    if (!success)
+    {
+        qDebug() << "Error retrieving borrow records from database:" << query.lastError().text();
+        return records;
+    }
+    while (query.next()) {
+        BorrowRecord record;
+        record.id = query.value("id").toInt();
+        record.clientId = query.value("client_id").toInt();
+        record.bookId = query.value("book_id").toInt();
+        record.borrowDate = query.value("borrow_date").toDate();
+        record.returnDate = query.value("return_date").toDate();
+        record.isReturned = query.value("is_returned").toBool();
+        records.append(record);
+    }
+    return records;
 }
 
 Book* Library::findBookByTitleAndAuthor(const QString& title, const QString& author)

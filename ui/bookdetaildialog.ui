@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ui version="4.0">
+    <class>BookDetailDialog</class>
+    <widget class="QDialog" name="BookDetailDialog">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>800</width>
+                <height>600</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>Book Details</string>
+        </property>
+        <property name="styleSheet">
+            <string>QDialog {
+                background-color: #f5f5f5;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                }
+
+                QLabel {
+                font-size: 14px;
+                font-weight: bold;
+                color: #000;
+                }
+
+                QTableWidget {
+                background-color: white;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                gridline-color: #e0e0e0;
+                color: #000;
+                }
+
+                QTableWidget::item {
+                padding: 8px;
+                border-bottom: 1px solid #e0e0e0;
+                color: #000;
+                }
+
+                QTableWidget::item:selected {
+                background-color: #e3f2fd;
+                }
+
+                QHeaderView::section {
+                background-color: #f8f9fa;
+                padding: 8px;
+                border: none;
+                font-weight: bold;
+                color: #555;
+                border-bottom: 2px solid #ddd;
+                }
+
+                QHeaderView::section:last {
+                border-right: none;
+                }
+
+                QGroupBox {
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                margin-top: 10px;
+                padding: 15px;
+                background-color: #ffffff;
+                }
+
+                QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top left;
+                padding: 0 3px;
+                left: 10px;
+                font-size: 16px;
+                font-weight: bold;
+                color: #333;
+                }
+
+                QPushButton {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                font-size: 14px;
+                font-weight: bold;
+                }
+                QPushButton:hover {
+                background-color: #0056b3;
+                }
+                QPushButton:pressed {
+                background-color: #004085;
+                }</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+                <widget class="QGroupBox" name="infoGroupBox">
+                    <property name="title">
+                        <string>Book Information</string>
+                    </property>
+                    <layout class="QFormLayout" name="formLayout">
+                        <property name="labelAlignment">
+                            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                        </property>
+                        <item row="0" column="0">
+                            <widget class="QLabel" name="titleLabel_2">
+                                <property name="text">
+                                    <string>Title:</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item row="0" column="1">
+                            <widget class="QLabel" name="titleLabel">
+                                <property name="text">
+                                    <string>Book Title</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item row="1" column="0">
+                            <widget class="QLabel" name="authorLabel_2">
+                                <property name="text">
+                                    <string>Author:</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item row="1" column="1">
+                            <widget class="QLabel" name="authorLabel">
+                                <property name="text">
+                                    <string>Book Author</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item row="2" column="0">
+                            <widget class="QLabel" name="totalCopiesLabel_2">
+                                <property name="text">
+                                    <string>Total Copies:</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item row="2" column="1">
+                            <widget class="QLabel" name="totalCopiesLabel">
+                                <property name="text">
+                                    <string>0</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item row="3" column="0">
+                            <widget class="QLabel" name="availableCopiesLabel_2">
+                                <property name="text">
+                                    <string>Available Copies:</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item row="3" column="1">
+                            <widget class="QLabel" name="availableCopiesLabel">
+                                <property name="text">
+                                    <string>0</string>
+                                </property>
+                            </widget>
+                        </item>
+                    </layout>
+                </widget>
+            </item>
+            <item>
+                <widget class="QGroupBox" name="currentBorrowsGroupBox">
+                    <property name="title">
+                        <string>Currently Borrowed</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_2">
+                        <item>
+                            <widget class="QTableWidget" name="currentBorrowsTable">
+                                <property name="columnCount">
+                                    <number>4</number>
+                                </property>
+                                <column>
+                                    <property name="text">
+                                        <string>Client Name</string>
+                                    </property>
+                                </column>
+                                <column>
+                                    <property name="text">
+                                        <string>Borrow Date</string>
+                                    </property>
+                                </column>
+                                <column>
+                                    <property name="text">
+                                        <string>Return Date</string>
+                                    </property>
+                                </column>
+                                <column>
+                                    <property name="text">
+                                        <string>Is Late?</string>
+                                    </property>
+                                </column>
+                            </widget>
+                        </item>
+                    </layout>
+                </widget>
+            </item>
+            <item>
+                <widget class="QGroupBox" name="historyGroupBox">
+                    <property name="title">
+                        <string>Borrow History</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_3">
+                        <item>
+                            <widget class="QTableWidget" name="historyTable">
+                                <property name="columnCount">
+                                    <number>5</number>
+                                </property>
+                                <column>
+                                    <property name="text">
+                                        <string>Client Name</string>
+                                    </property>
+                                </column>
+                                <column>
+                                    <property name="text">
+                                        <string>Borrow Date</string>
+                                    </property>
+                                </column>
+                                <column>
+                                    <property name="text">
+                                        <string>Expected Return</string>
+                                    </property>
+                                </column>
+                                <column>
+                                    <property name="text">
+                                        <string>Actual Return</string>
+                                    </property>
+                                </column>
+                                <column>
+                                    <property name="text">
+                                        <string>Days Late</string>
+                                    </property>
+                                </column>
+                            </widget>
+                        </item>
+                    </layout>
+                </widget>
+            </item>
+            <item>
+                <widget class="QDialogButtonBox" name="buttonBox">
+                    <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="standardButtons">
+                        <set>QDialogButtonBox::Close</set>
+                    </property>
+                </widget>
+            </item>
+        </layout>
+    </widget>
+    <resources/>
+    <connections>
+        <connection>
+            <sender>buttonBox</sender>
+            <signal>accepted()</signal>
+            <receiver>BookDetailDialog</receiver>
+            <slot>accept()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                    <x>248</x>
+                    <y>254</y>
+                </hint>
+                <hint type="destinationlabel">
+                    <x>157</x>
+                    <y>274</y>
+                </hint>
+            </hints>
+        </connection>
+        <connection>
+            <sender>buttonBox</sender>
+            <signal>rejected()</signal>
+            <receiver>BookDetailDialog</receiver>
+            <slot>reject()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                    <x>316</x>
+                    <y>260</y>
+                </hint>
+                <hint type="destinationlabel">
+                    <x>286</x>
+                    <y>274</y>
+                </hint>
+            </hints>
+        </connection>
+    </connections>
+</ui>

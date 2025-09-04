@@ -15,7 +15,7 @@ class FamilyViewDialog : public QDialog
 
 public:
     explicit FamilyViewDialog(QWidget *parent = nullptr);
-    ~FamilyViewDialog();
+    ~FamilyViewDialog() override;
 
     void setFamilyInfo(const QString& familyName, const QList<Client>& clients);
 private slots:

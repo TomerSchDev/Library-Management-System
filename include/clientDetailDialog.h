@@ -34,6 +34,8 @@ private slots:
     void on_returnBookButton_clicked();
     void on_extendBorrowButton_clicked();
     void on_infoTable_cellDoubleClicked(int row, int column);
+    void onBooksUpdated();
+;
 
 private:
     Ui::ClientDetailDialog *ui;

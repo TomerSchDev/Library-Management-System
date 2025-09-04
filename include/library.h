@@ -52,20 +52,21 @@ public:
     void addClient(QString name, QString surname, QString family);
     void removeClient(const Client& client);
     void loadClients();
-    [[nodiscard]] Client getClientById(const QString& id) const;
+    [[nodiscard]] Client getClientById(int id) const;
     [[nodiscard]] const QList<Client>& allClients() const;
     [[nodiscard]] const QList<QString>& allFamilies() const;
     [[nodiscard]] QList<Client> getClientsByFamilyName(const QString& familyName) const;
     bool updateClient(int id, const QString& name, const QString& surname, const QString& family) const;
-    void on_familyListWidget_doubleClicked(const Client& client) const;
+    void on_familyListWidget_doubleClicked(QWidget* p, const Client& client) ;
 
     // Borrow management
     TransactionResult borrowBook(int clientId, const BorrowRecord& record);
-    TransactionResult returnBook(const int& borrowRecordId) const;
+    [[nodiscard]] TransactionResult returnBook(const int& borrowRecordId) const;
     bool extendBorrowTime(const int& borrowRecordId, int days) const;
     Book* getBookById(int id) const;
     [[nodiscard]] QList<BorrowRecord> getBorrowRecordsByClientId(int clientId) const;
     QList<Book> getBorrowedBooksByClient(const QString& clientId) const;
+     QList<BorrowRecord>getBorrowRecordsByBookId(int bookId) const;
 
 signals:
     void booksUpdated();

@@ -66,3 +66,4 @@ void NewBorrowDialog::on_buttonBox_rejected()
 {
     reject();
 }
+
