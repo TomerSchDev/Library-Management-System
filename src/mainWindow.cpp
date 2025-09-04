@@ -1,12 +1,29 @@
-#include "mainwindow.h"
+#include "../include/mainWindow.h"
 #include "../ui/ui_mainwindow.h"
-#include "addbookdialog.h"
-#include "addclientdialog.h"
-#include "familyviewdialog.h"
-#include "bookdetaildialog.h"
-#include "clientDetailDialog.h"
+#include "windows/addbookdialog.h"
+#include "windows/addclientdialog.h"
+#include "windows/familyviewdialog.h"
+#include "windows/bookdetaildialog.h"
+#include "windows/clientDetailDialog.h"
 #include <QMessageBox>
 #include <QInputDialog>
+
+void MainWindow::handleEvent(const EventType event)
+{
+    switch (event) {
+        case EventType::BooksUpdated:
+            updateBookList();
+            break;
+        case EventType::ClientsUpdated:
+            updateClientList();
+            break;
+        case EventType::FamiliesUpdated:
+            updateFamilyList();
+            break;
+        default:
+            break;
+    }
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

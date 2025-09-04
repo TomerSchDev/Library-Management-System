@@ -8,19 +8,23 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include "book.h"
+
+#include "abstractWindow.h"
+#include "../book.h"
 
 namespace Ui {
     class NewBorrowDialog;
 }
 
-class NewBorrowDialog : public QDialog
+class NewBorrowDialog : public AbstractWindow
 {
     Q_OBJECT
 
 public:
     explicit NewBorrowDialog(const QList<Book>& availableBooks, QWidget *parent = nullptr);
     ~NewBorrowDialog() override;
+    void populateBookList();
+    void handleEvent(EventType event) override;
 
     Book getSelectedBook() const;
     QDate getReturnDate() const;

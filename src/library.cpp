@@ -1,16 +1,14 @@
-#include "../include/library.h"
+#include "library.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
 #include <QVariant>
-#include <QSet>
 #include <QUuid>
-#include <QVariantMap>
 
-#include "familyviewdialog.h"
-#include "clientDetailDialog.h"
-#include "../include/book.h"
-#include "../include/client.h"
+#include "windows/familyviewdialog.h"
+#include "windows/clientDetailDialog.h"
+#include "book.h"
+#include "client.h"
 
 Library::Library()
 {

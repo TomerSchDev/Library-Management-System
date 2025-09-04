@@ -2,8 +2,10 @@
 #define BOOKDETAILDIALOG_H
 
 #include <QDialog>
-#include "book.h"
-#include "library.h"
+
+#include "abstractWindow.h"
+#include "../book.h"
+#include "../library.h"
 
 class QTableWidgetItem;
 
@@ -11,13 +13,14 @@ namespace Ui {
     class BookDetailDialog;
 }
 
-class BookDetailDialog : public QDialog
+class BookDetailDialog : public AbstractWindow
 {
     Q_OBJECT
 
 public:
     explicit BookDetailDialog(const Book& book, Library* library, QWidget *parent = nullptr);
     ~BookDetailDialog() override;
+    void handleEvent(EventType event) override;
 
 private:
     void setupUI();

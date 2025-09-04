@@ -5,11 +5,13 @@
 #include <QString>
 #include <QList>
 
+#include "abstractWindow.h"
+
 namespace Ui {
     class AddClientDialog;
 }
 
-class AddClientDialog final : public QDialog
+class AddClientDialog final : public AbstractWindow
 {
     Q_OBJECT
 
@@ -21,6 +23,7 @@ public:
     QString getName() const;
     QString getSurname() const;
     QString getFamily() const;
+    void handleEvent(EventType event) override;
 
 private:
     Ui::AddClientDialog *ui;

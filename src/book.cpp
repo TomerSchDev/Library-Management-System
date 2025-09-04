@@ -1,6 +1,5 @@
 #include "book.h"
 
-#include <utility>
 
 Book::Book(int  id, const QString& title, const QString& author, int year, int copies)
     : m_id(id), m_title(title), m_author(author), m_year(year), m_copies(copies)

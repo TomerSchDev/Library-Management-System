@@ -1,14 +1,13 @@
-#include "bookdetaildialog.h"
+#include "windows/bookdetaildialog.h"
 #include "../ui/ui_bookdetaildialog.h"
 #include <QDate>
-#include <QDebug>
-#include <QHeaderView>
-#include <QTableWidgetItem>
 
-#include "clientDetailDialog.h"
+
+#include "windowManager.h"
+#include "windows/clientDetailDialog.h"
 
 BookDetailDialog::BookDetailDialog(const Book& book, Library* library, QWidget *parent)
-    : QDialog(parent)
+    : AbstractWindow(parent)
     , ui(new Ui::BookDetailDialog)
     , m_book(book)
     , m_library(library)
@@ -21,11 +20,17 @@ BookDetailDialog::BookDetailDialog(const Book& book, Library* library, QWidget *
     // For item pointer version:
     connect(ui->historyTable, &QTableWidget::itemDoubleClicked, this, &BookDetailDialog::onTableItemDoubleClicked);
 
+
 }
 
 BookDetailDialog::~BookDetailDialog()
 {
     delete ui;
+}
+
+void BookDetailDialog::handleEvent(const EventType event)
+{
+    onBooksUpdated();
 }
 
 void BookDetailDialog::setupUI()
@@ -121,7 +126,7 @@ void BookDetailDialog::onTableDoubleClicked(int row, int column)
 {
     if (column != 0) return; // Only respond to client name cell
     if (row < 0 || row >= ui->currentBorrowsTable->rowCount()) return; // Invalid row
-    QString clientName = ui->currentBorrowsTable->item(row, 0)->text();
+    const QString clientName = ui->currentBorrowsTable->item(row, 0)->text();
     // Assuming clientName is the full string representation of the client
     // You'll need to find the actual Client object from the library
     for (const auto& record : m_borrowRecords)
@@ -131,7 +136,7 @@ void BookDetailDialog::onTableDoubleClicked(int row, int column)
         if (clientTmpName == clientName)
         {
             ClientDetailDialog dialog(client, m_library, this);
-            dialog.exec();
+            WindowManager::instance().startNewWindow(&dialog);
             return;
         }
     }
@@ -152,7 +157,8 @@ void BookDetailDialog::onTableItemDoubleClicked(QTableWidgetItem* item)
         if (QString clientTmpName = QString("%1 %2").arg(client.name(), client.surname()); clientTmpName == clientName)
         {
             ClientDetailDialog dialog(client, m_library, this);
-            dialog.exec();
+            connect(&dialog, &ClientDetailDialog::loadBorrowRecords, this, &BookDetailDialog::onloadBorrowRecords);
+            WindowManager::instance().startNewWindow(&dialog);
             return;
         }
     }

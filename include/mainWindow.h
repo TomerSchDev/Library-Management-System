@@ -6,6 +6,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include "library.h"
+#include "windows/abstractWindow.h"
 
 // Forward declaration of the UI namespace
 namespace Ui {
@@ -13,11 +14,14 @@ namespace Ui {
 }
 class MainWindow : public QMainWindow
 {
+
+private:
     Q_OBJECT
 
 public:
+    void handleEvent(EventType event);
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 
 private slots:
     void on_addBookButton_clicked();

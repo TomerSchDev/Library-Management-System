@@ -3,18 +3,21 @@
 
 #include <QDialog>
 #include <QList>
-#include "client.h"
+
+#include "abstractWindow.h"
+#include "../client.h"
 
 namespace Ui {
     class FamilyViewDialog;
 }
 
-class FamilyViewDialog : public QDialog
+class FamilyViewDialog : public AbstractWindow
 {
     Q_OBJECT
 
 public:
     explicit FamilyViewDialog(QWidget *parent = nullptr);
+    void handleEvent(EventType event) override;
     ~FamilyViewDialog() override;
 
     void setFamilyInfo(const QString& familyName, const QList<Client>& clients);

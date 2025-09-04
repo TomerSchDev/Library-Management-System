@@ -1,15 +1,29 @@
-#include "familyviewdialog.h"
+#include "windows/familyviewdialog.h"
 
 #include <qabstractitemmodel.h>
 
-#include "clientDetailDialog.h"
+#include "windows/clientDetailDialog.h"
 #include "../ui/ui_familyviewdialog.h"
 
 FamilyViewDialog::FamilyViewDialog(QWidget *parent) :
-    QDialog(parent),
+    AbstractWindow(parent),
     ui(new Ui::FamilyViewDialog)
 {
     ui->setupUi(this);
+}
+
+void FamilyViewDialog::handleEvent(const EventType event)
+{
+    if (event == EventType::ClientsUpdated || event == EventType::FamiliesUpdated) {
+        // Refresh the family info if needed
+        // This requires storing the current family name and clients
+        // For simplicity, we will just clear the list here
+        ui->clientsListWidget->clear();
+        m_clients.clear();
+        const QString familyName = ui->familyNameLabel->text().remove("Family: ").trimmed();
+        const QList<Client> clients = Library::instance()->getClientsByFamilyName(familyName);
+        setFamilyInfo(familyName,clients);
+    }
 }
 
 FamilyViewDialog::~FamilyViewDialog()
