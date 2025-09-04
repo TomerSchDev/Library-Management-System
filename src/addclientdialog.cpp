@@ -1,15 +1,15 @@
-#include "addclientdialog.h"
+#include "windows/addclientdialog.h"
 #include "../ui/ui_addclientdialog.h"
 
 AddClientDialog::AddClientDialog(QWidget *parent)
-    : QDialog(parent)
+    : AbstractWindow(parent)
     , ui(new Ui::AddClientDialog)
 {
     ui->setupUi(this);
 }
 
 AddClientDialog::AddClientDialog(const QList<QString>& existingFamilies, QWidget *parent)
-    : QDialog(parent)
+    : AbstractWindow(parent)
     , ui(new Ui::AddClientDialog)
 {
     ui->setupUi(this);
@@ -31,4 +31,9 @@ QString AddClientDialog::getSurname() const {
 
 QString AddClientDialog::getFamily() const {
     return ui->familyComboBox->currentText();
+}
+
+void AddClientDialog::handleEvent(const EventType event)
+{
+    Q_UNUSED(event);
 }

@@ -1,12 +1,30 @@
-#include "mainwindow.h"
+#include "../include/mainWindow.h"
 #include "../ui/ui_mainwindow.h"
-#include "addbookdialog.h"
-#include "addclientdialog.h"
-#include "familyviewdialog.h"
-#include "bookdetaildialog.h"
-#include "clientDetailDialog.h"
+#include "windows/addbookdialog.h"
+#include "windows/addclientdialog.h"
+#include "windows/familyviewdialog.h"
+#include "windows/bookdetaildialog.h"
+#include "windows/clientDetailDialog.h"
 #include <QMessageBox>
-#include <QInputDialog>
+
+#include "windowManager.h"
+
+void MainWindow::handleEvent(const EventType event)
+{
+    switch (event) {
+        case EventType::BooksUpdated:
+            updateBookList();
+            break;
+        case EventType::ClientsUpdated:
+            updateClientList();
+            break;
+        case EventType::FamiliesUpdated:
+            updateFamilyList();
+            break;
+        default:
+            break;
+    }
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -16,11 +34,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_library, &Library::booksUpdated, this, &MainWindow::updateBookList);
     connect(_library, &Library::clientsUpdated, this, &MainWindow::updateClientList);
     connect(_library, &Library::familiesUpdated, this, &MainWindow::updateFamilyList);
-
-
     updateBookList();
     updateClientList();
     updateFamilyList();
+    WindowManager::instance().setMainWindow(this);
 }
 
 MainWindow::~MainWindow()
@@ -28,12 +45,15 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::updateBookList() {
-    ui->bookListWidget->clear();
-    const QList<Book>& books = _library->allBooks();
-    for (const Book& book : books) {
-        ui->bookListWidget->addItem(book.toString());
-    }
+void MainWindow::updateBookList() const
+{
+
+        ui->bookListWidget->clear();
+        for (const QList<Book>& books = _library->allBooks(); const Book& book : books) {
+            ui->bookListWidget->addItem(book.toString());
+        }
+
+
 }
 
 void MainWindow::updateClientList() {
@@ -57,6 +77,7 @@ void MainWindow::on_addBookButton_clicked()
     AddBookDialog dialog(this);
     if (dialog.exec() == QDialog::Accepted) {
         _library->addBook(dialog.getTitle(), dialog.getAuthor(), dialog.getYear(), dialog.getCopies());
+        onBooksUpdated();
     }
 }
 void MainWindow::on_bookListWidget_itemDoubleClicked(QListWidgetItem *item)
@@ -66,7 +87,7 @@ void MainWindow::on_bookListWidget_itemDoubleClicked(QListWidgetItem *item)
     Book* book =m_library->getBookById(bookId);
     if (book) {
         BookDetailDialog dialog(*book, m_library, this);
-        dialog.exec();
+        WindowManager::instance().startNewWindow(&dialog);
     }
 
 }
@@ -95,7 +116,7 @@ void MainWindow::on_addCopiesButton_clicked()
 void MainWindow::on_addClientButton_clicked()
 {
     AddClientDialog dialog(_library->allFamilies(), this);
-    if (dialog.exec() == QDialog::Accepted) {
+    if (WindowManager::instance().startNewWindow(&dialog) == QDialog::Accepted) {
         _library->addClient(dialog.getName(),dialog.getSurname(),dialog.getFamily());
     }
 }
@@ -107,7 +128,7 @@ void MainWindow::on_familyListWidget_doubleClicked(const QModelIndex &index)
 
     FamilyViewDialog dialog(this);
     dialog.setFamilyInfo(familyName, clients);
-    dialog.exec();
+    WindowManager::instance().startNewWindow(&dialog);
 }
 
 void MainWindow::on_clientListWidget_doubleClicked(const QModelIndex &index)
@@ -119,7 +140,11 @@ void MainWindow::on_clientListWidget_doubleClicked(const QModelIndex &index)
         const Client& client = clients[clientIndex];
 
         ClientDetailDialog dialog(client, _library, this);
-        dialog.exec();
+        if (WindowManager::instance().startNewWindow(&dialog) == QDialog::Accepted) {
+            updateClientList();
+            updateBookList();
+            updateFamilyList();
+        }
     }
 }
 

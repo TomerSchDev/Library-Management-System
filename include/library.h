@@ -57,7 +57,7 @@ public:
     [[nodiscard]] const QList<QString>& allFamilies() const;
     [[nodiscard]] QList<Client> getClientsByFamilyName(const QString& familyName) const;
     bool updateClient(int id, const QString& name, const QString& surname, const QString& family) const;
-    void on_familyListWidget_doubleClicked(QWidget* p, const Client& client) ;
+    void on_familyListWidget_doubleClicked(QWidget* p, const Client& client) const;
 
     // Borrow management
     TransactionResult borrowBook(int clientId, const BorrowRecord& record);
@@ -66,7 +66,7 @@ public:
     Book* getBookById(int id) const;
     [[nodiscard]] QList<BorrowRecord> getBorrowRecordsByClientId(int clientId) const;
     QList<Book> getBorrowedBooksByClient(const QString& clientId) const;
-     QList<BorrowRecord>getBorrowRecordsByBookId(int bookId) const;
+    QList<BorrowRecord>getBorrowRecordsByBookId(int bookId) const;
 
 signals:
     void booksUpdated();
@@ -79,7 +79,14 @@ private:
     void saveFamily(const QString& family) const;
     void loadFamilies();
     // Helper methods
-    Book* findBookByTitleAndAuthor(const QString& title, const QString& author);
+    Book* findBookByTitleAndAuthor(const QString& title, const QString& author) const;
+    static Book getBookFromQuery(const QSqlQuery& query);
+    static Client getClientFromQuery(const QSqlQuery& query);
+    static BorrowRecord getBorrowRecordFromQuery(const QSqlQuery& query);
+    static QList<BorrowRecord> getBorrowRecordsListByQuery(QSqlQuery& query);
+    static QList<Client>getClientsListByQuery(QSqlQuery& query);
+    static QList<Book>getBooksListByQuery(QSqlQuery& query);
+
 
 private:
     QList<Book> _books;

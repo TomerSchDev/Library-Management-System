@@ -1,9 +1,12 @@
 #include "book.h"
 
-#include <utility>
 
 Book::Book(int  id, const QString& title, const QString& author, int year, int copies)
-    : m_id(id), m_title(title), m_author(author), m_year(year), m_copies(copies)
+    : m_id(id), m_title(title), m_author(author), m_year(year), m_copies(copies), m_borrowed_count(0)
+{
+}
+Book::Book(int  id, const QString& title, const QString& author, int year, int copies,int borrowed_count)
+    : m_id(id), m_title(title), m_author(author), m_year(year), m_copies(copies), m_borrowed_count(borrowed_count)
 {
 }
 
@@ -43,9 +46,9 @@ void Book::reduceCopies(const int i)
 }
 
 QString Book::toString() const {
-    if (m_copies > 0) {
-        return QString("%1 by %2 (%3) - %4 copies").arg(m_title, m_author, QString::number(m_year), QString::number(m_copies));
-    } else {
-        return QString("%1 by %2 (%3) - Not Available").arg(m_title, m_author, QString::number(m_year));
+    if (m_copies-m_borrowed_count > 0) {
+        return QString("%1 by %2 (%3) - %4 copies - %5 available copies").arg(m_title, m_author, QString::number(m_year), QString::number(m_copies), QString::number(m_copies - m_borrowed_count));
     }
+    return QString("%1 by %2 (%3) - Not Available copies").arg(m_title, m_author, QString::number(m_year));
+
 }

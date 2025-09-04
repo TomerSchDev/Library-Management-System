@@ -15,6 +15,17 @@ private:
 
 public:
     Book(int  id, const QString& title, const QString& author, int year, int copies);
+    Book(int id, const QString& title, const QString& author, int year, int copies, int borrowed_count);
+    // Copy constructor
+    Book(const Book& other) = default;
+    // Move constructor
+    Book(Book&& other) noexcept = default;
+    // Copy assignment operator
+    Book& operator=(const Book& other) = default;
+    // Move assignment operator
+    Book& operator=(Book&& other) noexcept = default;
+    // Destructor
+    ~Book() = default;
 
     // Getters
     [[nodiscard]] int id() const;

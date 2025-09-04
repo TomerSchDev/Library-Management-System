@@ -1,16 +1,17 @@
-#include "clientdetaildialog.h"
+#include "windows/clientDetailDialog.h"
 #include "../ui/ui_clientdetaildialog.h"
-#include "newborrowdialog.h"
-#include "editclientdialog.h"
+#include "windows/newborrowdialog.h"
+#include "windows/editclientdialog.h"
 #include <QApplication>
 #include <QInputDialog>
 #include <QStyle>
 #include <QDebug>
 
-#include "familyviewdialog.h"
+#include "windowManager.h"
+#include "windows/familyviewdialog.h"
 
 ClientDetailDialog::ClientDetailDialog(const Client& client, Library* library, QWidget *parent)
-    : QDialog(parent)
+    : AbstractWindow(parent)
     , ui(new Ui::ClientDetailDialog)
     , m_client(client)
     , m_library(library)
@@ -27,6 +28,12 @@ ClientDetailDialog::ClientDetailDialog(const Client& client, Library* library, Q
 ClientDetailDialog::~ClientDetailDialog()
 {
     delete ui;
+}
+
+void ClientDetailDialog::handleEvent(EventType event)
+{
+    loadBorrowRecords();
+    updateBorrowTable();
 }
 
 void ClientDetailDialog::setupUI()
@@ -122,7 +129,8 @@ void ClientDetailDialog::updateBorrowTable()
 void ClientDetailDialog::on_newBorrowButton_clicked()
 {
     NewBorrowDialog newBorrowDialog(m_library->getAvailableBooks(), this);
-    if (newBorrowDialog.exec() == Accepted) {
+    int res = WindowManager::instance().startNewWindow(&newBorrowDialog);
+    if (res == Accepted) {
         Book selectedBook = newBorrowDialog.getSelectedBook();
         BorrowRecord newRecord;
         newRecord.bookId = selectedBook.id();
@@ -134,6 +142,7 @@ void ClientDetailDialog::on_newBorrowButton_clicked()
             QMessageBox::information(this, "Success", "Book borrowed successfully!");
             // Reload and update the table after a successful borrow
             loadBorrowRecords();
+            WindowManager::instance().handleEvent(EventType::BooksUpdated);
             emit updateBorrowTable();
         } else {
             QString errorMsg;
@@ -191,16 +200,14 @@ void ClientDetailDialog::on_saveCloseButton_clicked()
 
 void ClientDetailDialog::on_returnBookButton_clicked()
 {
-    QPushButton* button = qobject_cast<QPushButton*>(sender());
+    auto* button = qobject_cast<QPushButton*>(sender());
     if (!button) return;
 
-    int recordId = button->property("recordId").toInt();
-
-    if (m_library->returnBook(recordId) == TransactionResult::Success) {
+    if (int recordId = button->property("recordId").toInt(); m_library->returnBook(recordId) == TransactionResult::Success) {
         QMessageBox::information(this, "Success", "Book returned successfully!");
         // Reload and update the table after a successful return
         loadBorrowRecords();
-        updateBorrowTable();
+        emit updateBorrowTable();
     } else {
         QMessageBox::warning(this, "Error", "Failed to return book. It may have already been returned.");
     }

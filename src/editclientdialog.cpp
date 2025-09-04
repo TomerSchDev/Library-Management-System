@@ -1,8 +1,8 @@
-#include "editclientdialog.h"
+#include "windows/editclientdialog.h"
 #include "../ui/ui_editclientdialog.h"
 
 EditClientDialog::EditClientDialog(const Client& client, const QList<QString>& existingFamilies, QWidget *parent)
-    : QDialog(parent)
+    : AbstractWindow(parent)
     , ui(new Ui::EditClientDialog)
 {
     ui->setupUi(this);
@@ -21,6 +21,11 @@ EditClientDialog::EditClientDialog(const Client& client, const QList<QString>& e
 EditClientDialog::~EditClientDialog()
 {
     delete ui;
+}
+
+void EditClientDialog::handleEvent(const EventType event)
+{
+    Q_UNUSED(event);
 }
 
 QString EditClientDialog::getName() const {

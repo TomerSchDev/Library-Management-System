@@ -1,16 +1,15 @@
-#include "../include/library.h"
+#include "library.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
 #include <QVariant>
-#include <QSet>
 #include <QUuid>
-#include <QVariantMap>
 
-#include "familyviewdialog.h"
-#include "clientDetailDialog.h"
-#include "../include/book.h"
-#include "../include/client.h"
+#include "windows/familyviewdialog.h"
+#include "windows/clientDetailDialog.h"
+#include "book.h"
+#include "client.h"
+#include "windowManager.h"
 
 Library::Library()
 {
@@ -19,9 +18,13 @@ Library::Library()
         if (!_dbManager->createTables()) {
             qDebug() << "Error: Failed to create database tables.";
         }
+        qDebug() << "Successfully created database tables.";
         loadBooks();
+        qDebug() << "Successfully loaded books from database.";
         loadClients();
+        qDebug() << "Successfully loaded clients from database.";
         loadFamilies();
+        qDebug() << "Successfully loaded families from database.";
     }
 }
 
@@ -56,13 +59,7 @@ void Library::loadBooks()
         qDebug() << "Error loading books from database:" << query.lastError().text();
         return;
     }
-    while (query.next()) {
-        _books.append(Book(query.value("id").toInt(),
-                           query.value("title").toString(),
-                           query.value("author").toString(),
-                           query.value("year").toInt(),
-                           query.value("copies").toInt()));
-    }
+    _books=getBooksListByQuery(query);
     emit booksUpdated();
 }
 
@@ -92,13 +89,7 @@ void Library::loadClients()
         qDebug() << "Error loading clients from database:" << query.lastError().text();
         return;
     }
-    while (query.next()) {
-        _clients.append(Client(query.value("id").toInt(),
-                               query.value("name").toString(),
-                               query.value("surname").toString(),
-                               query.value("family").toString()));
-    }
-    emit clientsUpdated();
+    _clients=getClientsListByQuery(query);
 }
 
 void Library::loadFamilies()
@@ -133,34 +124,38 @@ void Library::addBook(const QString& title, const QString& author, int year, int
 
 void Library::removeBook(int index)
 {
-    if (index >= 0 && index < _books.size()) {
-        QVariantMap args;
-        args["id"] = _books[index].id();
-        auto [success, query] =_dbManager->executeAction(DbAction::Delete, DbTable::Books, args);
-        if (!success)
-        {
-            qDebug() << "Error removing book from database:" << query.lastError().text();
-            return;
-        }
-        emit booksUpdated();
-        _books.removeAt(index);
+    if (index < 0 || index >= _books.size()) {
+        qDebug() << "Invalid book index:" << index;
+        return;
     }
+    QVariantMap args;
+    args["id"] = _books[index].id();
+    if (auto [success, query] =_dbManager->executeAction(DbAction::Delete, DbTable::Books, args); !success)
+    {
+        qDebug() << "Error removing book from database:" << query.lastError().text();
+        return;
+    }
+    emit booksUpdated();
+    _books.removeAt(index);
+
 }
 
 void Library::addCopies(int index, int numCopies)
 {
-    if (index >= 0 && index < _books.size()) {
-        Book& book = _books[index];
-        book.setCopies(book.copies() + numCopies);
+    if (index < 0 || index >= _books.size() || numCopies <= 0) {
+        qDebug() << "Invalid book index or number of copies:" << index << numCopies;
+        return;
+    }
+    Book& book = _books[index];
+    book.setCopies(book.copies() + numCopies);
 
-        QVariantMap args;
-        args["id"] = book.id();
-        args["copies"] = book.copies();
-        if (auto [success, query] = _dbManager->executeAction(DbAction::Update, DbTable::Books, args); !success)
-        {
-            qDebug() << "Error updating book copies in database:" << query.lastError().text();
-            return;
-        }
+    QVariantMap args;
+    args["id"] = book.id();
+    args["copies"] = book.copies();
+    if (auto [success, query] = _dbManager->executeAction(DbAction::Update, DbTable::Books, args); !success)
+    {
+        qDebug() << "Error updating book copies in database:" << query.lastError().text();
+        return;
     }
     emit booksUpdated();
 }
@@ -237,13 +232,7 @@ Client Library::getClientById(const int id) const
         qDebug() << "Error retrieving client from database:" << query.lastError().text();
         return {};
     }
-    if (query.next()) {
-        return Client(query.value("id").toInt(),
-                      query.value("name").toString(),
-                      query.value("surname").toString(),
-                      query.value("family").toString());
-    }
-    return {};
+    return query.next()? getClientFromQuery(query) : Client{};
 }
 
 const QList<Client>& Library::allClients() const
@@ -258,22 +247,16 @@ const QList<QString>& Library::allFamilies() const
 
 QList<Client> Library::getClientsByFamilyName(const QString& familyName) const
 {
-    QList<Client> familyClients;
     QVariantMap args;
     args["family"] = familyName;
     auto [success, query] = _dbManager->executeAction(DbAction::Select, DbTable::Clients, args);
     if (!success)
     {
         qDebug() << "Error retrieving clients by family from database:" << query.lastError().text();
-        return familyClients;
+        return {};
     }
-    while (query.next()) {
-        familyClients.append(Client(query.value("id").toInt(),
-                                    query.value("name").toString(),
-                                    query.value("surname").toString(),
-                                    query.value("family").toString()));
-    }
-    return familyClients;
+
+    return getClientsListByQuery(query);
 }
 
 bool Library::updateClient(const int id, const QString& name, const QString& surname, const QString& family) const
@@ -302,7 +285,7 @@ void Library::saveFamily(const QString& family) const
 
 
 
-void Library::on_familyListWidget_doubleClicked(QWidget* p,const Client& client)
+void Library::on_familyListWidget_doubleClicked(QWidget* p,const Client& client) const
 {
     FamilyViewDialog dialog(p);
     dialog.setFamilyInfo(client.family(), getClientsByFamilyName(client.family()));
@@ -351,10 +334,11 @@ TransactionResult Library::borrowBook(const int clientId, const BorrowRecord& re
     {
         return TransactionResult::Failure_DBFailed;
     }
-    // Decrease the number of available copies
+
     QVariantMap updateArgs;
     updateArgs["id"] = book->id();
-    updateArgs["borrowed_count"] = book->copies() - 1;
+    updateArgs["copies"] = book->copies();
+    updateArgs["borrowed_count"] = book->borrowedCount() + 1;
     if (auto [success,queryR] = _dbManager->executeAction(DbAction::Update, DbTable::Books, updateArgs); !success)
     {
         qDebug()<< "Error updating book copies in database after borrowing, removing borrow:" << queryR.lastError().text();
@@ -381,6 +365,7 @@ TransactionResult Library::returnBook(const int& borrowRecordId) const
     {
         return TransactionResult::Failure_DBFailed;
     }
+    WindowManager::instance().handleEvent(EventType::BooksUpdated);
     return TransactionResult::Success;
 
 }
@@ -402,8 +387,7 @@ bool Library::extendBorrowTime(const int& borrowRecordId, const int days) const
         QVariantMap updateArgs;
         updateArgs["id"] = borrowRecordId;
         updateArgs["return_date"] = newReturnDate.toString(Qt::ISODate);
-        auto [success,query] = _dbManager->executeAction(DbAction::Update, DbTable::BorrowRecords, updateArgs);
-        if (!success)
+        if (auto [success,query] = _dbManager->executeAction(DbAction::Update, DbTable::BorrowRecords, updateArgs); !success)
         {
             qDebug() << "Error updating borrow record in database:" << query.lastError().text();
             return false;
@@ -423,47 +407,21 @@ Book* Library::getBookById(int id) const
         qDebug() << "Error retrieving book from database:" << query.lastError().text();
         return nullptr;
     }
-    if (query.next())
-    {
-        return new Book(query.value("id").toInt(),
-                        query.value("title").toString(),
-                        query.value("author").toString(),
-                        query.value("year").toInt(),
-                        query.value("copies").toInt());
-    }
-
-    for (auto& book : _books)
-    {
-        if (book.id() == id) {
-            return new Book(book.id(), book.title(), book.author(), book.year(), book.copies());
-        }
-    }
-
-    return nullptr;
+    return query.next() ? new Book(getBookFromQuery(query)) : nullptr;
 }
 
 QList<BorrowRecord> Library::getBorrowRecordsByClientId(const int clientId) const
 {
-    QList<BorrowRecord> records;
     QVariantMap args;
     args["client_id"] = clientId;
     auto [success,query] = _dbManager->executeAction(DbAction::Select, DbTable::BorrowRecords, args);
     if (!success)
     {
         qDebug() << "Error retrieving borrow records from database:" << query.lastError().text();
-        return records;
+        return {};
     }
-    while (query.next()) {
-        BorrowRecord record;
-        record.id = query.value("id").toInt();
-        record.clientId = query.value("client_id").toInt();
-        record.bookId = query.value("book_id").toInt();
-        record.borrowDate = query.value("borrow_date").toDate();
-        record.returnDate = query.value("return_date").toDate();
-        record.isReturned = query.value("is_returned").toBool();
-        records.append(record);
-    }
-    return records;
+
+    return getBorrowRecordsListByQuery(query);
 }
 
 QList<Book> Library::getBorrowedBooksByClient(const QString& clientId) const
@@ -477,8 +435,9 @@ QList<Book> Library::getBorrowedBooksByClient(const QString& clientId) const
         qDebug() << "Error retrieving borrow records from database:" << query.lastError().text();
         return books;
     }
-    while (query.next()) {
-        const int bookId = query.value("book_id").toInt();
+
+    for (const auto record: getBorrowRecordsListByQuery(query)) {
+        const int bookId = record.bookId;
         // Assuming you have a way to get a Book object from its ID
         for (const auto& book : _books) {
             if (book.id() == bookId) {
@@ -486,6 +445,31 @@ QList<Book> Library::getBorrowedBooksByClient(const QString& clientId) const
                 break;
             }
         }
+    }
+    return books;
+}
+QList<BorrowRecord> Library::getBorrowRecordsListByQuery(QSqlQuery& query)
+{
+    QList<BorrowRecord> records;
+    while (query.next()) {
+            records.append(getBorrowRecordFromQuery(query));
+    }
+    return records;
+}
+
+QList<Client> Library::getClientsListByQuery(QSqlQuery& query)
+{
+    QList<Client>clients;
+    while (query.next()) {
+            clients.append(getClientFromQuery(query));
+    }
+    return clients;
+}
+QList<Book> Library::getBooksListByQuery(QSqlQuery& query)
+{
+    QList<Book> books;
+    while (query.next()) {
+        books.append(getBookFromQuery(query));
     }
     return books;
 }
@@ -501,25 +485,44 @@ QList<BorrowRecord> Library::getBorrowRecordsByBookId(int bookId) const
         qDebug() << "Error retrieving borrow records from database:" << query.lastError().text();
         return records;
     }
-    while (query.next()) {
-        BorrowRecord record;
-        record.id = query.value("id").toInt();
-        record.clientId = query.value("client_id").toInt();
-        record.bookId = query.value("book_id").toInt();
-        record.borrowDate = query.value("borrow_date").toDate();
-        record.returnDate = query.value("return_date").toDate();
-        record.isReturned = query.value("is_returned").toBool();
-        records.append(record);
-    }
     return records;
 }
 
-Book* Library::findBookByTitleAndAuthor(const QString& title, const QString& author)
+Book* Library::findBookByTitleAndAuthor(const QString& title, const QString& author) const
 {
-    for (auto& book : _books) {
-        if (book.title() == title && book.author() == author) {
-            return &book;
-        }
-    }
-    return nullptr;
+    auto [success, query] = _dbManager->executeAction(DbAction::Select, DbTable::Books, {{"title", title}, {"author", author}});
+    if (!success)
+        return nullptr;
+    return query.next() ? new Book(getBookFromQuery(query)) : nullptr;
+}
+Book Library::getBookFromQuery(const QSqlQuery& query)
+{
+    return Book(query.value("id").toInt(),
+                query.value("title").toString(),
+                query.value("author").toString(),
+                query.value("year").toInt(),
+                query.value("copies").toInt(),
+                query.value("borrowed_count").toInt());
+}
+
+Client Library::getClientFromQuery(const QSqlQuery& query)
+{
+
+    return Client(
+                query.value("id").toInt(),
+                query.value("name").toString(),
+                query.value("surname").toString(),
+                query.value("family").toString());
+}
+
+BorrowRecord Library::getBorrowRecordFromQuery(const QSqlQuery& query)
+{
+    return BorrowRecord{
+        query.value("id").toInt(),
+        query.value("book_id").toInt(),
+        query.value("client_id").toInt(),
+        query.value("borrow_date").toDate(),
+        query.value("return_date").toDate(),
+        query.value("is_returned").toBool()
+    };
 }

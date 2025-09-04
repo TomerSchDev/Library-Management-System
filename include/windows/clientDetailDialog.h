@@ -11,21 +11,26 @@
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QDate>
-#include "client.h"
-#include "library.h"
+
+#include "abstractWindow.h"
+#include "../client.h"
+#include "../library.h"
 
 namespace Ui {
     class ClientDetailDialog;
 }
 
 
-class ClientDetailDialog : public QDialog
+class ClientDetailDialog : public AbstractWindow
 {
     Q_OBJECT
 
 public:
     explicit ClientDetailDialog(const Client& client, Library* library, QWidget *parent = nullptr);
     ~ClientDetailDialog() override;
+    void handleEvent(EventType event) override;
+public slots:
+    void loadBorrowRecords();
 
 private slots:
     void on_newBorrowButton_clicked();
@@ -35,7 +40,7 @@ private slots:
     void on_extendBorrowButton_clicked();
     void on_infoTable_cellDoubleClicked(int row, int column);
     void onBooksUpdated();
-;
+
 
 private:
     Ui::ClientDetailDialog *ui;
@@ -43,7 +48,6 @@ private:
     QVector<BorrowRecord> m_borrowRecords;
     Library* m_library = Library::instance();
     void setupUI();
-    void loadBorrowRecords();
     void updateBorrowTable();
 };
 
