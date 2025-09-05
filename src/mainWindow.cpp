@@ -26,6 +26,23 @@ void MainWindow::handleEvent(const EventType event)
     }
 }
 
+void MainWindow::handleEvent(const EventType event)
+{
+    switch (event) {
+        case EventType::BooksUpdated:
+            updateBookList();
+            break;
+        case EventType::ClientsUpdated:
+            updateClientList();
+            break;
+        case EventType::FamiliesUpdated:
+            updateFamilyList();
+            break;
+        default:
+            break;
+    }
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow), _library(Library::instance())
